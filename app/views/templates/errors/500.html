@@ -1,5 +1,7 @@
-{% extends "base.html" %}
+{% extends "base_error.html" %}
+
+{% block error%}500{% endblock %}
 
 {% block content %}
-    <h1>Internal Server Error</h1>
+    Internal Server Error
 {% endblock %}
