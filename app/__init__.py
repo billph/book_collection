@@ -5,6 +5,7 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_login import LoginManager
+from flask_cors import CORS
 from config import Config
 
 db = SQLAlchemy()
@@ -12,6 +13,8 @@ migrate = Migrate()
 login = LoginManager()
 login.login_view = "auth.login"
 login.login_message = "Please login to access this page"
+cors = CORS()
+
 
 def create_app(config_class=Config):
     app = Flask(__name__, template_folder=config_class.TEMPLATE_URL, static_folder=config_class.STATIC_URL)
@@ -20,6 +23,7 @@ def create_app(config_class=Config):
     db.init_app(app)
     migrate.init_app(app, db)
     login.init_app(app)
+    cors.init_app(app)
 
     from app.controllers.errors import bp as errors_bp
     app.register_blueprint(errors_bp)

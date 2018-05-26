@@ -23,23 +23,86 @@
                 <input type="checkbox" class="form-check-input" id="remember">
                 <label class="form-check-label" for="remember">Remember me</label>
             </div>
-            <button style="margin: 1vh 0vh 1vh 0vh;" type="submit" class="btn btn-outline-secondary">Register</button>
+            <button style="margin: 1vh 0vh 1vh 0vh;" id="authSubmit" type="submit" class="btn btn-outline-secondary">Register</button>
             <p>Already have an account?
                 <a href="{{ url_for('auth.login' )}}"> Click here to log in</a>
             </p>
         </form>
     </div>
 </div>
-{% endblock %}
-
-{% block script %}
+{% endblock %} {% block script %}
 <script>
-    $("#authForm").validate({
-        rules: {
-            password: "required",
-            password1: {
-                equalTo: "#password"
+
+    $("#authForm").submit(function(e) {
+        $.when(usernameUsable($("#username").val())).then(res => {
+            if (!(res === true && $("#authForm").valid())) {
+                e.preventDefault()
             }
-        }
+        })
     });
+
+    $("#authForm").validate({
+        errorClass: "text-danger",
+        rules: {
+            username: "required",
+            password: {
+                required: true,
+                minlength: 8,
+            },
+            password1: {
+                required: true,
+                equalTo: "#password"
+            },
+            email: {
+                required: true,
+            }
+        },
+
+        messages: {
+            username: "Username is required.",
+            password: {
+                required: "Password is required.",
+                minlength: "Password must be at least 8 characters."
+            },
+            password1: {
+                equalTo: "Password does not match.",
+            },
+            email: "Please type in an email."
+        },
+    });
+
+    $('#username').change(function () {
+        const username = $(this).val()
+        if (username.length > 0) {
+            $.when(usernameUsable(username)).then(res => {
+                console.log(res)
+                const $validator = $("#authForm").validate();
+                if (res === null) {
+                    const errors = { username: "Cannot connect to the server." };
+                    $validator.showErrors(errors);
+                }
+                else if (!res) {
+                    const errors = { username: "Username already exists. Please try different username." };
+                    $validator.showErrors(errors);
+                }
+            })
+        }
+    })
+
+    const usernameUsable = async (username) => {
+        const data = await fetch("http://127.0.0.1:5000/userexist", {
+            method: "POST",
+            body: JSON.stringify({ username }),
+            headers: { "Content-Type": "application/json" }
+        });
+
+        if (!data.ok) {
+            return null
+        }
+
+        const result = await data.json()
+        console.log(result.usable)
+        return result.usable == "true" ? true : false
+    }
+
 </script> {% endblock %}
