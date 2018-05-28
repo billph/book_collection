@@ -5,23 +5,19 @@
             <h1 class="h1">Register</h1>
             <div class="form-group">
                 <label for="username">Username</label>
-                <input type="text" class="form-control" name="username" id="username" placeholder="Username" required>
+                <input type="text" value="{% if data %}{{ data.username }}{% endif %}" value="Hello" class="form-control" name="username" id="username" placeholder="Username" required>
             </div>
             <div class="form-group">
                 <label for="password">Password</label>
-                <input type="password" class="form-control" name="password" id="password" placeholder="Password">
+                <input type="password" value="{% if data %}{{ data.password }}{% endif %}" class="form-control" name="password" id="password" placeholder="Password">
             </div>
             <div class="form-group">
                 <label for="password1">Retype password</label>
-                <input type="password" class="form-control" name="password1" id="password1" placeholder="Retype password">
+                <input type="password" value="{% if data %}{{ data.password1 }}{% endif %}" class="form-control" name="password1" id="password1" placeholder="Retype password">
             </div>
             <div class="form-group">
                 <label for="email">Email</label>
-                <input type="email" class="form-control" id="email" name="email" placeholder="Retype password">
-            </div>
-            <div class="form-check">
-                <input type="checkbox" class="form-check-input" id="remember">
-                <label class="form-check-label" for="remember">Remember me</label>
+                <input type="email" value="{% if data %}{{ data.email }}{% endif %}" class="form-control" id="email" name="email" placeholder="Retype password">
             </div>
             <button style="margin: 1vh 0vh 1vh 0vh;" id="authSubmit" type="submit" class="btn btn-outline-secondary">Register</button>
             <p>Already have an account?
@@ -32,7 +28,7 @@
 </div>
 {% endblock %} {% block script %}
 <script>
-
+    
     $("#authForm").submit(function(e) {
         $.when(usernameUsable($("#username").val())).then(res => {
             if (!(res === true && $("#authForm").valid())) {
@@ -75,7 +71,6 @@
         const username = $(this).val()
         if (username.length > 0) {
             $.when(usernameUsable(username)).then(res => {
-                console.log(res)
                 const $validator = $("#authForm").validate();
                 if (res === null) {
                     const errors = { username: "Cannot connect to the server." };
@@ -101,8 +96,11 @@
         }
 
         const result = await data.json()
-        console.log(result.usable)
+        return true
         return result.usable == "true" ? true : false
     }
+
+    
+    
 
 </script> {% endblock %}
