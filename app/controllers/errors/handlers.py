@@ -12,3 +12,7 @@ def not_found_error(error):
 def internal_error(error):
     db.session.rollback()
     return render_template("errors/500.html"), 500
+
+@bp.route("/badrequest400")
+def bad_request():
+    return abort(400)

@@ -6,6 +6,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_login import LoginManager
 from flask_cors import CORS
+from flask_jsglue import JSGlue
 from config import Config
 
 db = SQLAlchemy()
@@ -14,6 +15,7 @@ login = LoginManager()
 login.login_view = "auth.login"
 login.login_message = "Please login to access this page"
 cors = CORS()
+jsglue = JSGlue()
 
 
 def create_app(config_class=Config):
@@ -24,6 +26,7 @@ def create_app(config_class=Config):
     migrate.init_app(app, db)
     login.init_app(app)
     cors.init_app(app)
+    jsglue.init_app(app)
 
     from app.controllers.errors import bp as errors_bp
     app.register_blueprint(errors_bp)

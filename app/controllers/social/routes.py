@@ -11,4 +11,13 @@ def user(username):
     u = User.query.filter_by(username=username).first_or_404()
     return render_template("social/user_page.html", user=u)
 
-
+@bp.route("/addbio", methods=["POST"])
+@login_required
+def add_bio():
+    data = request.get_json()
+    if data["username"] != current_user.username:
+        return redirect(url_for("errors.bad_request"))
+    u = User.query.filter_by(username=data["username"]).first()
+    u.bio = data["bio"]
+    db.session.commit()
+    return jsonify()
