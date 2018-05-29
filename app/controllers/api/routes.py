@@ -12,6 +12,15 @@ def user_exist():
     if username["username"]:
         if User.query.filter_by(username=username["username"]).first() is None:
             return jsonify({"usable": "true"}) 
-    return jsonify({"usable": "false"})       
+    return jsonify({"usable": "false"})  
+
+@bp.route("/flash", methods=["POST"])
+def flash():
+    message = request.get_json()
+    if message["message"]:
+        flash(message["message"])
+    else:
+        pass
+
 
 
