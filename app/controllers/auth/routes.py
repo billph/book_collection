@@ -70,15 +70,7 @@ def register():
         return redirect(url_for("auth.login"))
     data = session.get("register", None)
     session.pop("register", None)
-    return render_template("auth/register.html", data=data)
-
-@bp.route("/userexist", methods=["POST"])
-def user_exist():
-    username = request.get_json()
-    if username["username"]:
-        if User.query.filter_by(username=username["username"]).first() is None:
-            return jsonify({"usable": "true"}) 
-    return jsonify({"usable": "false"})        
+    return render_template("auth/register.html", data=data) 
 
 @bp.route("/logout", methods=["GET", "POST"])
 @login_required
