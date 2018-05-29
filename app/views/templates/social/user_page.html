@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block content %}
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-2">
+                <img alt="avatar" width="100%" src="{{ user.add_avatar(1028) }}" class="img-fluid rounded">
+                <p class="h3">{{ user.username }}</p>
+            </div>
+            <div class="col-sm-10">
+                <p>Hjsdkfhskdhfkshdfk shdfj hsjkd fh</p>
+            </div>
+        </div>
+    </div>
+{% endblock %}

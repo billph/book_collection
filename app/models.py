@@ -1,5 +1,6 @@
 from datetime import datetime
 import os
+from hashlib import md5
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin
 from app import db, login
@@ -22,9 +23,16 @@ class User(UserMixin, db.Model):
     username = db.Column(db.String(30), unique=True, nullable=False)
     first_name = db.Column(db.String(20))
     last_name = db.Column(db.String(20))
-    email = db.Column(db.String(80), unique=True, nullable=False)
+    password = db.Column(db.String(128))
+    email = db.Column(db.String(80), nullable=False)
     preferences = db.Column(db.String(100))
+    bio = db.Column(db.String(60))
     books = db.relationship("Book", secondary="user_book", lazy='dynamic')
+
+    def add_avatar(self, size):
+        digest = md5(self.username.lower().encode('utf-8')).hexdigest()
+        return 'https://www.gravatar.com/avatar/{}?d=identicon&s={}'.format(
+            digest, size)
 
     def add_book(self, book):
         self.books.append(book)

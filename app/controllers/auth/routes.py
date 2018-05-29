@@ -1,7 +1,8 @@
 import re
 from flask import render_template, url_for, redirect, request, flash, jsonify, session
 from werkzeug.urls import url_parse
-from flask_login import login_user, logout_user, current_user
+from flask_login import login_user, logout_user, current_user, login_required
+from app import db
 from app.controllers.auth import bp
 from app.models import User
 
@@ -25,6 +26,7 @@ def login():
             return redirect(url_for("auth.login"))
 
         login_user(user, remember=bool(remember))
+        return "You have logged in"
         next_page = request.args.get("next")
         if not next_page or url_parse(next_page).netloc != "":
             next_page = url_for("main.index")
@@ -58,10 +60,16 @@ def register():
         elif not re.match(r"[^@]+@[^@]+\.[^@]+", email):
             flash("Invalid email address.")
             return redirect(url_for("auth.register")) 
+        # once all validations are successfull
+        user = User(email=email, username=username)
+        user.set_password(password)
+        db.session.add(user)
+        db.session.commit()
         session.pop("register", None)
+        flash("You have successfully registered.")
+        return redirect(url_for("auth.login"))
     data = session.get("register", None)
     session.pop("register", None)
-    print(session.get("register", None))
     return render_template("auth/register.html", data=data)
 
 @bp.route("/userexist", methods=["POST"])
@@ -71,4 +79,11 @@ def user_exist():
         if User.query.filter_by(username=username["username"]).first() is None:
             return jsonify({"usable": "true"}) 
     return jsonify({"usable": "false"})        
+
+@bp.route("/logout", methods=["GET", "POST"])
+@login_required
+def logout():
+    logout_user()
+    flash("Successful logging out.")
+    return redirect(url_for("auth.login"))
 
