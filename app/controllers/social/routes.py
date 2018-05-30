@@ -21,3 +21,23 @@ def add_bio():
     u.bio = data["bio"]
     db.session.commit()
     return jsonify()
+
+@bp.route("/search/user", methods=["GET"])
+@login_required
+def search_user():
+    
+    def process_user(user):
+        return user.username
+    username = request.args.get('username')
+    list_of_names = User.query.filter(User.username.like("%{}%".format(username))).all()
+    dic = {}
+    item = []
+    for i in list_of_names:
+        try:
+            dic[i.username] = dic[i.first_name] + dic[i.last_name]
+            item.append({"fullname": i.firstname + i.lastname, "username": i.username})
+        except KeyError:
+            item.append({"fullname": "Foo Bar", "username": i.username})
+    dic["value"] = item
+    print(dic)
+    return jsonify(dic)

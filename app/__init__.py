@@ -17,7 +17,6 @@ login.login_message = "Please login to access this page"
 cors = CORS()
 jsglue = JSGlue()
 
-
 def create_app(config_class=Config):
     app = Flask(__name__, template_folder=config_class.TEMPLATE_URL, static_folder=config_class.STATIC_URL)
     app.config.from_object(config_class)

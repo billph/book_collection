@@ -13,9 +13,82 @@
         crossorigin="anonymous"></script>
     <link rel="icon" href="{{ url_for('static', filename='img/books.png') }}">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.17.0/jquery.validate.js"></script>
+    <script src="{{ url_for('static', filename='js/typeahead.js') }}"></script>
     <title>
         {% if title %} {{ title }} {% else %} Book Collection {% endif %}
     </title>
+    <style>
+        .loading {    
+            background-color: #ffffff;
+            background-image: url("http://loadinggif.com/images/image-selection/3.gif");
+            background-size: 25px 25px;
+            background-position:right center;
+            background-repeat: no-repeat;
+        }
+        .typeahead,
+        .tt-query,
+        .tt-hint {
+            outline: none;
+        }
+
+        .typeahead {
+        background-color: #fff;
+        }
+
+
+        .tt-query {
+        -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
+            -moz-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
+                box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
+        }
+
+        .tt-hint {
+            color: #999
+        }
+
+        .tt-menu {
+            width: 400px;
+            margin: 12px 0;
+            padding: 8px 0;
+            background-color: #fff;
+            border: 1px solid #ccc;
+            border: 1px solid rgba(0, 0, 0, 0.2);
+            -webkit-border-radius: 8px;
+                -moz-border-radius: 8px;
+                    border-radius: 8px;
+            -webkit-box-shadow: 0 5px 10px rgba(0,0,0,.2);
+                -moz-box-shadow: 0 5px 10px rgba(0,0,0,.2);
+                    box-shadow: 0 5px 10px rgba(0,0,0,.2);
+        }
+
+        .tt-suggestion {
+            padding: 3px 5px;
+            font-size: 13px;
+        }
+
+        .tt-suggestion:hover {
+            cursor: pointer;
+            color: #fff;
+            background-color: #0097cf;
+        }
+
+        .tt-suggestion.tt-cursor {
+            color: #fff;
+            background-color: #0097cf;
+
+        }
+
+        .tt-suggestion p {
+            margin: 0;
+        }
+
+        #the-basics .nav-search-section {
+            margin: 0 5px 5px 5px;
+            padding: 3px 0;
+            border-bottom: 1px solid #ccc;
+        }
+          
+    </style>
 </head>
 
 <body>
@@ -54,7 +127,12 @@
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('auth.logout') }}">Log Out</a>
                     </li>
+                    
                 </ul>
+                <form class="form-inline my-2 my-lg-0" id="the-basics">
+                    <input class="form-control mr-sm-2 typeahead" type="search" id="nav-search-input" name="nav-search-input" placeholder="Search" aria-label="Search">
+                    <button class="btn btn-outline-success my-2 my-sm-0" id="nav-search-button" type="submit">Search</button>
+                </form>
                 {% endif %} 
                 {% if not current_user.is_authenticated %}
                 <ul class="navbar-nav ml-auto">
@@ -88,5 +166,93 @@
 </body>
 
 {% block script %} {% endblock %}
+
+
+{% if current_user.is_authenticated %}
+    
+    <script>
+        const books = new Bloodhound({
+            datumTokenizer: Bloodhound.tokenizers.whitespace,
+            queryTokenizer: Bloodhound.tokenizers.whitespace,
+            remote: {
+                wildcard: '%QUERY',
+                url: 'https://www.googleapis.com/books/v1/volumes?maxResults=10&q=%QUERY',
+                transform: function(response) {
+                    // Map the remote source JSON array to a JavaScript object array
+                    return $.map(response.items, function(book) {
+                        return {   
+                            title: book.volumeInfo.title,
+                            isbn: book.volumeInfo.industryIdentifiers,
+                            author: book.volumeInfo.authors ? book.volumeInfo.authors[0] : "No Author"
+                        }
+                    });
+                }
+            }
+        })
+
+        const users = new Bloodhound({
+            datumTokenizer: Bloodhound.tokenizers.whitespace,
+            queryTokenizer: Bloodhound.tokenizers.whitespace,
+            remote: {
+                wildcard: '%QUERY',
+                url: Flask.url_for("social.search_user", {"_external": true, "username": "%QUERY"}),
+                transform: response => response.value
+            }
+        });
+
+        $('#the-basics .typeahead').typeahead({
+            hint: true,
+            highlight: false,
+            minLength: 1
+        },
+        {
+            name: 'Books',
+            templates: {
+                header: '<p class="h5 nav-search-section">Books</p>',
+                suggestion: function(data) {
+                    return `<p class="typeahead-nav-row" id="${data.isbn}">${data.title} by <strong>${data.author}</strong><p>`;
+                }
+            },
+            source: books,
+
+        }, {
+            name: "Users",
+            templates: {
+                header: '<p class="h5 nav-search-section">Users</p>',
+                suggestion: function(data) {
+                    console.log(data)
+                    return `<p class="typeahead-nav-row">${data.fullname} - ${data.username}<p>`;
+                }
+            },
+            source: users,
+        });
+
+        $('input[name="nav-search-input"]').on('input', function(val) {
+            if ($(this).val()) {
+                $( ".twitter-typeahead input").addClass("loading")
+            }
+        })
+
+        $('input[name="nav-search-input"]').on('typeahead:selected', function(evt, item) {
+            let isbn = null
+            if (item.isbn.length === 2) {
+                isbn = item.isbn[1].identifier
+            }
+            else if (item.isbn.length === 1) {
+                isbn = item.isbn[0].identifier
+            }
+            alert(isbn)
+            $(this).typeahead("val", "");
+            $(this).val("")
+        })
+
+        $('#the-basics .typeahead').bind('typeahead:render', function(ev, suggestion) {
+            if (suggestion) {
+                $( ".twitter-typeahead input").removeClass("loading")
+            }
+        });
+
+    </script>
+{% endif %}
 
 </html>
