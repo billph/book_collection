@@ -5,7 +5,8 @@
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" integrity="sha384-WskhaSGFgHYWDcbwN70/dfYBj47jz9qbsMId/iRN3ewGhXQFZCSftd1LZCfmhktB"
         crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.5.2/animate.min.css">
-    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.0.13/css/all.css" integrity="sha384-DNOHZ68U8hZfKXOrtjWvjxusGo9WQnrNx2sqG0tfsghAvtVlRW3tvkXWZh58N9jp" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.0.13/css/all.css" integrity="sha384-DNOHZ68U8hZfKXOrtjWvjxusGo9WQnrNx2sqG0tfsghAvtVlRW3tvkXWZh58N9jp"
+        crossorigin="anonymous">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49"
         crossorigin="anonymous"></script>
@@ -14,17 +15,22 @@
     <link rel="icon" href="{{ url_for('static', filename='img/books.png') }}">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.17.0/jquery.validate.js"></script>
     <script src="{{ url_for('static', filename='js/typeahead.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/helpers.js') }}"></script>
     <title>
         {% if title %} {{ title }} {% else %} Book Collection {% endif %}
     </title>
+
+    {% block head %}{% endblock %}
+
     <style>
-        .loading {    
+        .loading {
             background-color: #ffffff;
             background-image: url("http://loadinggif.com/images/image-selection/3.gif");
             background-size: 25px 25px;
-            background-position:right center;
+            background-position: right center;
             background-repeat: no-repeat;
         }
+
         .typeahead,
         .tt-query,
         .tt-hint {
@@ -32,14 +38,14 @@
         }
 
         .typeahead {
-        background-color: #fff;
+            background-color: #fff;
         }
 
 
         .tt-query {
-        -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
+            -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
             -moz-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
-                box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
+            box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
         }
 
         .tt-hint {
@@ -54,11 +60,11 @@
             border: 1px solid #ccc;
             border: 1px solid rgba(0, 0, 0, 0.2);
             -webkit-border-radius: 8px;
-                -moz-border-radius: 8px;
-                    border-radius: 8px;
-            -webkit-box-shadow: 0 5px 10px rgba(0,0,0,.2);
-                -moz-box-shadow: 0 5px 10px rgba(0,0,0,.2);
-                    box-shadow: 0 5px 10px rgba(0,0,0,.2);
+            -moz-border-radius: 8px;
+            border-radius: 8px;
+            -webkit-box-shadow: 0 5px 10px rgba(0, 0, 0, .2);
+            -moz-box-shadow: 0 5px 10px rgba(0, 0, 0, .2);
+            box-shadow: 0 5px 10px rgba(0, 0, 0, .2);
         }
 
         .tt-suggestion {
@@ -87,7 +93,18 @@
             padding: 3px 0;
             border-bottom: 1px solid #ccc;
         }
-          
+
+        .modal {
+            text-align: align;
+            z-index: 100000000 !important;
+        }
+        
+        
+        #bookSearchModal .pic {
+            float: left;
+            margin-right: 5px;
+        }
+
     </style>
 </head>
 
@@ -127,14 +144,14 @@
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('auth.logout') }}">Log Out</a>
                     </li>
-                    
+
                 </ul>
                 <form class="form-inline my-2 my-lg-0" id="the-basics">
-                    <input class="form-control mr-sm-2 typeahead" type="search" id="nav-search-input" name="nav-search-input" placeholder="Search" aria-label="Search">
+                    <input class="form-control mr-sm-2 typeahead" type="search" id="nav-search-input" name="nav-search-input" placeholder="Search"
+                        aria-label="Search">
                     <button class="btn btn-outline-success my-2 my-sm-0" id="nav-search-button" type="submit">Search</button>
                 </form>
-                {% endif %} 
-                {% if not current_user.is_authenticated %}
+                {% endif %} {% if not current_user.is_authenticated %}
                 <ul class="navbar-nav ml-auto">
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('auth.login') }}">Log In</a>
@@ -148,68 +165,93 @@
         </div>
     </nav>
     <div class="container">
-        {% with messages = get_flashed_messages() %}
-            {% if messages %}
-                {% for message in messages %}
-                    <div class="alert alert-info alert-dismissible fade show" role="alert" style="margin-top: 1.5vh;">
-                        {{ message }}
-                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
-                        </button>
-                    </div>
-                {% endfor %}
-            {% endif %}
-        {% endwith %}
+        {% with messages = get_flashed_messages() %} {% if messages %} {% for message in messages %}
+        <div class="alert alert-info alert-dismissible fade show" role="alert" style="margin-top: 1.5vh;">
+            {{ message }}
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        {% endfor %} {% endif %} {% endwith %}
     </div>
+
+    <!-- Modal -->
+    {% if current_user.is_authenticated %}
+    <div class="modal fade" id="bookSearchModal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="row">
+                    <div class="col-sm-1"></div>
+                    <div class="col-sm-10">
+                        <img class="pic" class="img-fluid"/>
+                        <h4 class="name"></h4>
+                        <p class="author text-muted"><strong>Author(s): </strong><span></span></p>
+                        <h6 class="description lead"></h6>
+                        <div style="line-height:6.5px;">
+                            <p class="pageCount"></p>
+                            <p><strong>Rating: </strong><span class="rating"></span></p>
+                        </div>
+                        
+                    </div>
+                    <div class="col-sm-1"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary">Add to Collection</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
 
     {% block content %} {% endblock %}
 </body>
 
-{% block script %} {% endblock %}
+{% block script %} {% endblock %} 
 
 
 {% if current_user.is_authenticated %}
-    
-    <script>
-        const books = new Bloodhound({
-            datumTokenizer: Bloodhound.tokenizers.whitespace,
-            queryTokenizer: Bloodhound.tokenizers.whitespace,
-            remote: {
-                wildcard: '%QUERY',
-                url: 'https://www.googleapis.com/books/v1/volumes?maxResults=10&q=%QUERY',
-                transform: function(response) {
-                    // Map the remote source JSON array to a JavaScript object array
-                    return $.map(response.items, function(book) {
-                        return {   
-                            title: book.volumeInfo.title,
-                            isbn: book.volumeInfo.industryIdentifiers,
-                            author: book.volumeInfo.authors ? book.volumeInfo.authors[0] : "No Author"
-                        }
-                    });
-                }
+<!-- Handling searching and opening modal in navigation bar -->
+<script>
+    const books = new Bloodhound({
+        datumTokenizer: Bloodhound.tokenizers.whitespace,
+        queryTokenizer: Bloodhound.tokenizers.whitespace,
+        remote: {
+            wildcard: '%QUERY',
+            url: 'https://www.googleapis.com/books/v1/volumes?maxResults=10&filter=partial&q=%QUERY',
+            transform: function (response) {
+                // Map the remote source JSON array to a JavaScript object array
+                return $.map(response.items, function (book) {
+                    return {
+                        title: book.volumeInfo.title,
+                        isbn: book.volumeInfo.industryIdentifiers,
+                        author: book.volumeInfo.authors ? book.volumeInfo.authors[0] : "No Author"
+                    }
+                });
             }
-        })
+        }
+    })
 
-        const users = new Bloodhound({
-            datumTokenizer: Bloodhound.tokenizers.whitespace,
-            queryTokenizer: Bloodhound.tokenizers.whitespace,
-            remote: {
-                wildcard: '%QUERY',
-                url: Flask.url_for("social.search_user", {"_external": true, "username": "%QUERY"}),
-                transform: response => response.value
-            }
-        });
+    const users = new Bloodhound({
+        datumTokenizer: Bloodhound.tokenizers.whitespace,
+        queryTokenizer: Bloodhound.tokenizers.whitespace,
+        remote: {
+            wildcard: '%QUERY',
+            url: Flask.url_for("social.search_user", { "_external": true, "username": "%QUERY" }),
+            transform: response => response.value
+        }
+    });
 
-        $('#the-basics .typeahead').typeahead({
-            hint: true,
-            highlight: false,
-            minLength: 1
-        },
+    $('#the-basics .typeahead').typeahead({
+        hint: true,
+        highlight: false,
+        minLength: 1
+    },
         {
             name: 'Books',
             templates: {
                 header: '<p class="h5 nav-search-section">Books</p>',
-                suggestion: function(data) {
+                suggestion: function (data) {
                     return `<p class="typeahead-nav-row" id="${data.isbn}">${data.title} by <strong>${data.author}</strong><p>`;
                 }
             },
@@ -219,40 +261,63 @@
             name: "Users",
             templates: {
                 header: '<p class="h5 nav-search-section">Users</p>',
-                suggestion: function(data) {
-                    console.log(data)
+                suggestion: function (data) {
                     return `<p class="typeahead-nav-row">${data.fullname} - ${data.username}<p>`;
                 }
             },
             source: users,
         });
 
-        $('input[name="nav-search-input"]').on('input', function(val) {
-            if ($(this).val()) {
-                $( ".twitter-typeahead input").addClass("loading")
-            }
-        })
+    $('input[name="nav-search-input"]').on('input', function (val) {
+        if ($(this).val()) {
+            $(".twitter-typeahead input").addClass("loading")
+        }
+    })
 
-        $('input[name="nav-search-input"]').on('typeahead:selected', function(evt, item) {
-            let isbn = null
-            if (item.isbn.length === 2) {
-                isbn = item.isbn[1].identifier
-            }
-            else if (item.isbn.length === 1) {
-                isbn = item.isbn[0].identifier
-            }
-            alert(isbn)
-            $(this).typeahead("val", "");
-            $(this).val("")
-        })
+    $('input[name="nav-search-input"]').on('typeahead:selected', function (evt, item) {
+        let isbn = null
+        if (item.isbn.length === 2) {
+            isbn = item.isbn[1].identifier
+        }
+        else if (item.isbn.length === 1) {
+            isbn = item.isbn[0].identifier
+        }
+        if (isbn !== null) {            
+            $.when(getBookByISBN(isbn)).then(book => {
+                $("#bookSearchModal .pic").attr("src", book.imageLinks.thumbnail)
+                $("#bookSearchModal .name").text(book.title)
+                let temp = book.authors.map((value) => value + ", ")
+                const reduce = temp.reduce((reduce, val) => reduce + val)
+                $("#bookSearchModal .author span").text(reduce.substring(0, reduce.length - 2))
+                $("#bookSearchModal .description").html("<strong>Description: </strong>" + book.description)
+                $("#bookSearchModal .pageCount").html("<strong>Pages: </strong>" + book.pageCount)
+                $("#bookSearchModal .rating").text(book.averageRating == null ? "Not available" : book.averageRating)
+                $("#bookSearchModal .btn").attr("isbn", isbn)
+                $('#bookSearchModal').modal('show')
+            })
+        }
+        $(this).typeahead("val", "");
+        $(this).val("")
+    })
 
-        $('#the-basics .typeahead').bind('typeahead:render', function(ev, suggestion) {
-            if (suggestion) {
-                $( ".twitter-typeahead input").removeClass("loading")
-            }
-        });
+    $('#the-basics .typeahead').bind('typeahead:render', function (ev, suggestion) {
+        if (suggestion) {
+            $(".twitter-typeahead input").removeClass("loading")
+        }
+    });
 
-    </script>
+</script> 
+
+<!-- Handling add book into collection from the modal that is opened in the navigation bar -->
+<script>
+    $("#bookSearchModal .btn").click(function() {
+        const isbn = $(this).attr("isbn")
+        // do something with database here
+    })
+</script>
+
 {% endif %}
+
+
 
 </html>
