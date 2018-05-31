@@ -9,8 +9,12 @@
     color: orange;
 }
 
-#famous-books .description {
-    height: 10.8em;
+.read-more-text {
+    height: auto;
+}
+
+.read-less-text {
+    height: 13.5em;
     overflow: hidden;
 }
 
@@ -54,7 +58,7 @@
             <p class="h2">
                 <nav>
                     <div class="nav nav-tabs" id="nav-tab" role="tablist">
-                        <a class="nav-item nav-link active" id="nav-home-tab" data-toggle="tab" href="#nav-home" role="tab" aria-controls="nav-home"
+                        <a class="nav-item nav-link active" id="nav-home-tab" data-toggle="tab" href="#overview" role="tab" aria-controls="nav-home"
                             aria-selected="true">
                             Overview
                         </a>
@@ -70,69 +74,62 @@
                 </nav>
                 <div class="container">
                     <div class="tab-content" id="nav-tabContent">
-                        <div class="tab-pane fade show active" id="famous-books" role="tabpanel" aria-labelledby="nav-home-tab">
-                            <p class="lead" style="margin-bottom: 0px; margin-top: 15px;">Famous books</p>
-                            <div id="carouselExampleControls" class="carousel slide" data-ride="carousel">
-                                <div class="carousel-inner">
-                                    <div class="carousel-item active">
-                                        <div class="row">
-                                            <div class="col-sm-3">
-                                                <img class="img-fluid" src="https://books.google.com/books?id=zyTCAlFPjgYC&printsec=frontcover&img=1&zoom=6&edge=curl&source=gbs_api">
-                                                <button type="button" class="btn btn-primary btn-sm btn-block">Get from Google</button>
-                                            </div>
-                                            <div class="col-sm-9">
-                                                <div style="line-height: 0.9px;">
-                                                    <p class="h4"><strong>The Google story</strong></p>
-                                                    <p><small>by David A. Vise and Mark Malseed</small></p>
-                                                    <div class="rating">
-                                                        <span class="fa fa-star checked"></span>
-                                                        <span class="fa fa-star checked"></span>
-                                                        <span class="fa fa-star checked"></span>
-                                                        <span class="fa fa-star checked"></span>
-                                                        <span class="fa fa-star"></span>&ensp;
-                                                        <span class="font-weight-light">128 reviews</span>
+                        <div class="tab-pane fade show active" id="overview" role="tabpanel" aria-labelledby="overview">
+                            <div id="famous-books">
+                                <p class="lead" style="margin-bottom: 0px; margin-top: 15px;">Famous books</p>
+                                <div id="famousBookCarousel" class="carousel slide" data-ride="carousel" data-pause="false" data-interval="6000">
+                                    <div class="carousel-inner">
+                                        <div class="carousel-item active first-carousel">
+                                            <div class="row">
+                                                <div class="col-sm-3">
+                                                    <img class="img-fluid" style="width:100%;margin-bottom:3px;"/>
+                                                    <a class="getGoogle"><button type="button" class="btn btn-primary btn-sm btn-block">Get from Google</button></a>
+                                                </div>
+                                                <div class="col-sm-9">
+                                                    <div style="line-height: 0.9px;">
+                                                        <p class="h4"><strong class="title"></strong></p>
+                                                        <p><small class="authors"></small></p>
+                                                        <div class="rating"></div>
+                                                    </div>
+                                                    <div class="description read-less-text"></div>
+                                                    <div class="text-center read-more">
+                                                        <a href="#" style="text-decoration:none;"><div>Read more</div></a>
+                                                        <a href="#" style="font-size:10px;"><i class="fas fa-arrow-down"></i></a>
+                                                    </div>
+                                                    <div class="text-center d-none read-less">
+                                                        <a href="#" style="text-decoration:none;"><div>Read less</div></a>
+                                                        <a href="#" style="font-size:10px;"><i class="fas fa-arrow-up"></i></a>
                                                     </div>
                                                 </div>
-                                                <div class="description">
-                                                    Here is the story behind one of the most remarkable Internet
-                                                    successes of our time. Based on scrupulous research and extraordinary access
-                                                    to Google, ...
-                                                    Here is the story behind one of the most remarkable Internet
-                                                    successes of our time. Based on scrupulous research and extraordinary access
-                                                    to Google, ...
-                                                    Here is the story behind one of the most remarkable Internet
-                                                    successes of our time. Based on scrupulous research and extraordinary access
-                                                    to Google, ...
-                                                    Here is the story behind one of the most remarkable Internet
-                                                    successes of our time. Based on scrupulous research and extraordinary access
-                                                    to Google, ...
+                                            </div>
+                                        </div>
+                                        <div class="carousel-item second-carousel">
+                                            <div class="row">
+                                                <div class="col-sm-3">
+                                                    <img class="img-fluid" style="width:100%;margin-bottom:3px;">
+                                                    <a class="getGoogle"><button type="button" class="btn btn-primary btn-sm btn-block">Get from Google</button></a>
                                                 </div>
-                                                <div id="read-more" class="text-center">
-                                                    <a href="#" style="text-decoration:none;"><div>Read more</div></a>
-                                                    <a href="#" style="font-size:10px;"><i class="fas fa-arrow-down"></i></a>
-                                                </div>
-                                                <div id="read-less" class="text-center">
-                                                    <a href="#" style="text-decoration:none;"><div>Read down</div></a>
-                                                    <a href="#" style="font-size:10px;"><i class="fas fa-arrow-up"></i></a>
+                                                <div class="col-sm-9">
+                                                    <div style="line-height: 0.9px;">
+                                                        <p class="h4"><strong class="title"></strong></p>
+                                                        <p><small class="authors"></small></p>
+                                                        <div class="rating">
+                                                        </div>
+                                                    </div>
+                                                    <div class="description read-less-text"></div>
+                                                    <div class="text-center read-more">
+                                                        <a href="#" style="text-decoration:none;"><div>Read more</div></a>
+                                                        <a href="#" style="font-size:10px;"><i class="fas fa-arrow-down"></i></a>
+                                                    </div>
+                                                    <div class="text-center d-none read-less">
+                                                        <a href="#" style="text-decoration:none;"><div>Read less</div></a>
+                                                        <a href="#" style="font-size:10px;"><i class="fas fa-arrow-up"></i></a>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="carousel-item">
-                                        First Page
-                                    </div>
-                                    <div class="carousel-item">
-                                        Third Page
-                                    </div>
                                 </div>
-                                <a class="carousel-control-prev" href="#carouselExampleControls" role="button" data-slide="prev">
-                                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                                    <span class="sr-only">Previous</span>
-                                </a>
-                                <a class="carousel-control-next" href="#carouselExampleControls" role="button" data-slide="next">
-                                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                                    <span class="sr-only">Next</span>
-                                </a>
                             </div>
                         </div>
                         <div class="tab-pane fade" id="nav-profile" role="tabpanel" aria-labelledby="nav-profile-tab">...</div>
@@ -145,8 +142,14 @@
 </div>
 {% endblock %} 
 {% block script %}
+
 <script>
     const username = "{{ user.username }}"
+    let read_more = false
+
+    if (!read_more) {
+        
+    }
 
     // Add Bio section
     $("#add_bio_button").click(function () {
@@ -168,7 +171,6 @@
         })
 
     })
-
     $("#save_bio_button").click(function () {
         const bio = $("#add_bio_textarea").val()
         $.ajax({
@@ -206,5 +208,108 @@
                     })
             })
     })
+    
+    // Add items to famous book carousel 
+    let first = true 
+    const setCarouselItem = (selector, isbn) => {
+        $.when(getBookByISBN(isbn)).done(book => {
+            // reset read more and less
+            $(selector + " .description").removeClass("read-more-text")
+            $(selector + " .description").removeClass("read-less-text")
+            $(selector + " .description").addClass("read-less-text")
+            $(selector + " .read-more").removeClass("d-none")
+            $(selector + " .read-less").addClass("d-none")
 
-</script> {% endblock %}
+            $(selector + " img").attr("src", book.imageLinks.thumbnail)
+            $(selector + " .getGoogle").attr("href", book.infoLink)
+            $(selector + " .title").text(book.title)
+
+            // handling authors
+            let text_author = ""
+            switch (book.authors.length) {
+                case 0:
+                    text_author = "No Author"
+                case 1:
+                    text_author = `by ${book.authors[0]}}`
+                case 2:
+                    text_author = `by ${book.authors[0]} and ${book.authors[1]}`
+                default:
+                    text_author = "Multiple Authors"
+            }
+            $(selector + " .authors").text(text_author)
+
+            // handling rating
+            if (book.averageRating) {
+                let rating = ""
+                for (let i = 0; i < Math.floor(book.averageRating); i++) {
+                    rating += '<span class="fa fa-star checked"></span>'
+                }
+                for (let i = Math.floor(book.averageRating); i < 5; i++) {
+                    rating += '<span class="fa fa-star"></span>'
+                }
+                $(selector + " .rating").html(rating + `<span class="font-weight-light">&ensp;${book.ratingsCount} reviews</span>`)
+            }
+
+            if (book.description) {
+                $(selector + " .description").text(book.description)
+            }
+        })
+    }
+    const resetCarouselItem = (selector) => {
+        $(selector + " img").attr("src", "#")
+        $(selector + " .getGoogle").attr("href", "#")
+        $(selector + " .title").text("")
+        $(selector + " .authors").text("")
+        $(selector + " .description").text("")
+            
+    }
+    let list_of_books = null
+    $.when(getListOfBooks(username))
+    .done(res => {
+        list_of_books = res
+        if (list_of_books.length > 0) {
+            setCarouselItem('#famousBookCarousel .first-carousel', list_of_books[getRandomIndex(list_of_books)])
+            setCarouselItem('#famousBookCarousel .second-carousel', list_of_books[getRandomIndex(list_of_books)])
+        }
+    })
+
+    $('#famousBookCarousel').on('slide.bs.carousel', function () {
+        const selector = "#famousBookCarousel" + (!first ? " .second-carousel" : " .first-carousel")
+        first = ! first
+        setCarouselItem(selector, list_of_books[getRandomIndex(list_of_books)])
+    })
+
+    // handle read more and read less in carousel
+    $(".first-carousel .read-more").click(() => {
+        $(".first-carousel .description").removeClass("read-less-text")
+        $(".first-carousel .description").addClass("read-more-text")
+        $(".first-carousel .read-more").addClass("d-none")
+        $(".first-carousel .read-less").removeClass("d-none")
+    })
+
+    $(".first-carousel .read-less").click(() => {
+        $(".first-carousel .description").addClass("read-less-text")
+        $(".first-carousel .description").removeClass("read-more-text")
+        $(".first-carousel .read-less").addClass("d-none")
+        $(".first-carousel .read-more").removeClass("d-none")
+    })
+
+    $(".second-carousel .read-more").click(() => {
+        $(".second-carousel .description").removeClass("read-less-text")
+        $(".second-carousel .description").addClass("read-more-text")
+        $(".second-carousel .read-more").addClass("d-none")
+        $(".second-carousel .read-less").removeClass("d-none")
+    })
+
+    $(".second-carousel .read-less").click(() => {
+        $(".second-carousel .description").addClass("read-less-text")
+        $(".second-carousel .description").removeClass("read-more-text")
+        $(".second-carousel .read-less").addClass("d-none")
+        $(".second-carousel .read-more").removeClass("d-none")
+    })
+
+
+</script> 
+
+
+{% endblock %}

@@ -35,9 +35,17 @@ class User(UserMixin, db.Model):
             digest, size)
 
     def add_book(self, book):
-        self.books.append(book)
-        db.session.add(self)
-        db.session.commit()
+        exist = self.books.filter_by(id=book.id).first()
+        if not exist:
+            user_book = User_Book(user_id=self.id, book_id=book.id, finished=False)
+            db.session.add(user_book)
+            db.session.commit()
+
+    def get_books(self):
+        list_of_isbn = []
+        for i in self.books.all():
+            list_of_isbn.append(str(i.id))
+        return list_of_isbn
 
     def set_password(self, password):
         self.password = generate_password_hash(password)
@@ -52,13 +60,10 @@ class Book(db.Model):
     __tablename__ = "book"
     
     id = db.Column(db.String(15), primary_key=True)
-    book_name = db.Column(db.String(200))
-    genre = db.Column(db.String(200), nullable=False)
-    author = db.Column(db.String(300), nullable=False)
     users = db.relationship("User", secondary="user_book", lazy='dynamic')
 
     def __repr__(self):
-        return "<Book {}>".format(self.book_name)
+        return "<Book {}>".format(self.id)
 
 
 @login.user_loader

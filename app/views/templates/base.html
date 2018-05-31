@@ -313,11 +313,20 @@
     $("#bookSearchModal .btn").click(function() {
         const isbn = $(this).attr("isbn")
         // do something with database here
+        $.ajax({
+            method: "POST",
+            contentType: "application/json",
+            url: Flask.url_for("api.add_book_by_isbn", {"_external": true}),
+            data: JSON.stringify({ isbn })
+        })
+        .done(
+            $("#bookSearchModal").modal("hide")
+        )
+        .fail(
+            console.log("Error")
+        )
     })
 </script>
 
 {% endif %}
-
-
-
 </html>
