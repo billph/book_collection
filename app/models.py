@@ -15,6 +15,26 @@ class User_Book(db.Model):
     notes = db.Column(db.String(1000))
     topics = db.Column(db.String(1000))
 
+# class Following(db.Model):
+#     """
+#         user_id is the user ifeslf
+#         following_id is the id of the other user that the current user is following
+#     """
+#     __tablename__ = "following"
+#     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), primary_key=True)
+#     following_id = db.Column(db.Integer, db.ForeignKey("user.id"), primary_key=True)
+
+# following = db.Table(
+#     'following',
+#     db.Column('user_id', db.Integer, db.ForeignKey('user.id')),
+#     db.Column('following_id', db.Integer, db.ForeignKey('user.id'))
+# )
+
+class Friendship(db.Model):
+    __tablename__ = "friend"
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), primary_key=True)
+    following_id = db.Column(db.Integer, db.ForeignKey('user.id'), primary_key=True)
+
 
 class User(UserMixin, db.Model):
     __tablename__ = "user"
@@ -28,11 +48,36 @@ class User(UserMixin, db.Model):
     preferences = db.Column(db.String(100))
     bio = db.Column(db.String(60))
     books = db.relationship("Book", secondary="user_book", lazy='dynamic')
+    # following_users = db.relationship("User", secondary="following",
+    #     primaryjoin=(following.user_id == id),
+    #     secondaryjoin=(following.following_id == id),
+    #     backref=db.backref('following', lazy='dynamic'), 
+    #     lazy='dynamic')
+
+    followers = db.relationship('Friendship', backref='to', primaryjoin=id==Friendship.following_id)
+    following = db.relationship('Friendship', backref='from', primaryjoin=id==Friendship.user_id)
 
     def add_avatar(self, size):
         digest = md5(self.username.lower().encode('utf-8')).hexdigest()
         return 'https://www.gravatar.com/avatar/{}?d=identicon&s={}'.format(
             digest, size)
+
+    def follow(self, user):
+        if not self.is_following(user):
+            f = Friendship(user_id=self.id, following_id=user.id)
+            db.session.add(f)
+            db.session.commit()
+    
+    def unfollow(self, user):
+        if self.is_following(user):
+            Friendship.query.filter_by(user_id=self.id, following_id=user.id).delete()
+            db.session.commit()
+            
+    def is_following(self, user):
+        return Friendship.query.filter_by(user_id=self.id, following_id=user.id).count() > 0
+
+    def get_followers(self):
+        return self.following_users.filter(following.c.user_id == self.id).all()
 
     def add_book(self, book):
         exist = self.books.filter_by(id=book.id).first()
@@ -69,4 +114,3 @@ class Book(db.Model):
 @login.user_loader
 def load_user(id):
     return User.query.get(int(id))
-    

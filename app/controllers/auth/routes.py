@@ -67,6 +67,8 @@ def register():
         db.session.commit()
         session.pop("register", None)
         flash("You have successfully registered.")
+        if current_user.is_authenticated:
+            logout_user()
         return redirect(url_for("auth.login"))
     data = session.get("register", None)
     session.pop("register", None)
