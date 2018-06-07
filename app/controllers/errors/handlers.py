@@ -4,6 +4,8 @@ from flask import render_template, abort
 from app import db
 from app.controllers.errors import bp
 
+# All handlers for errors
+
 @bp.app_errorhandler(404)
 def not_found_error(error):
     return render_template("errors/404.html"), 404

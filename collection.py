@@ -1,6 +1,7 @@
 from app import create_app, db
 from app.models import User, Book, User_Book, Friendship
 
+# get the app instance
 app = create_app()
 
 @app.shell_context_processor

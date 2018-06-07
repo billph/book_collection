@@ -6,11 +6,11 @@ from app import db
 from app.controllers.auth import bp
 from app.models import User
 
-
+# login route. User to log the user in
 @bp.route("/login", methods=["GET", "POST"])
 def login():
     if current_user.is_authenticated:
-        return "You are already logged in"
+        return redirect(url_for("main.home"))
     if request.method == "POST":
         username = request.form.get('username')
         password = request.form.get('password')
@@ -26,27 +26,33 @@ def login():
             return redirect(url_for("auth.login"))
 
         login_user(user, remember=bool(remember))
-        return "You have logged in"
         next_page = request.args.get("next")
         if not next_page or url_parse(next_page).netloc != "":
-            next_page = url_for("main.index")
+            next_page = url_for("main.home")
         return redirect(next_page)
     return render_template("auth/login.html")
 
+# used for registering the user
 @bp.route("/register", methods=["GET", "POST"])
 def register():
     if current_user.is_authenticated:
         return "You are already logged in"
     if request.method == "POST":
+        # in case it does not pass all the tests, the values from the form are still saved
         username = request.form.get("username").strip()
         password = request.form.get("password").strip()
         password1 = request.form.get("password1").strip()
         email = request.form.get("email")
+        firstName = request.form.get("firstName")
+        lastName = request.form.get("lastName")
+
         session["register"] = {
             "username": username,
             "password": password,
             "password1": password1,
-            "email": email
+            "email": email,
+            "firstName": firstName,
+            "lastName": lastName
         }
         if User.query.filter_by(username=username).first() is not None:
             flash("Username already exists.")
@@ -61,7 +67,7 @@ def register():
             flash("Invalid email address.")
             return redirect(url_for("auth.register")) 
         # once all validations are successfull
-        user = User(email=email, username=username)
+        user = User(email=email, username=username, first_name=firstName.strip().lower(), last_name=lastName.strip().lower())
         user.set_password(password)
         db.session.add(user)
         db.session.commit()
@@ -74,6 +80,7 @@ def register():
     session.pop("register", None)
     return render_template("auth/register.html", data=data) 
 
+# logging out user
 @bp.route("/logout", methods=["GET", "POST"])
 @login_required
 def logout():

@@ -2,6 +2,8 @@
 
 <head>
     {{ JSGlue.include() }}
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" integrity="sha384-WskhaSGFgHYWDcbwN70/dfYBj47jz9qbsMId/iRN3ewGhXQFZCSftd1LZCfmhktB"
         crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.5.2/animate.min.css">
@@ -21,7 +23,7 @@
     </title>
 
     {% block head %}{% endblock %}
-
+    {{ moment.include_moment() }}
     <style>
         .loading {
             background-color: #ffffff;
@@ -40,7 +42,6 @@
         .typeahead {
             background-color: #fff;
         }
-
 
         .tt-query {
             -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
@@ -67,6 +68,38 @@
             box-shadow: 0 5px 10px rgba(0, 0, 0, .2);
         }
 
+        .spinner {
+            display: none;
+            width: 40px;
+            height: 40px;
+            background-color: rgba(0, 0, 0, .65);
+            position: absolute;
+            top: 40%;
+            left: 50%;
+            z-index: 10000000000;
+            -webkit-animation: sk-rotateplane 1.2s infinite ease-in-out;
+            animation: sk-rotateplane 1.2s infinite ease-in-out;
+        }
+
+        @-webkit-keyframes sk-rotateplane {
+            0% { -webkit-transform: perspective(120px) }
+            50% { -webkit-transform: perspective(120px) rotateY(180deg) }
+            100% { -webkit-transform: perspective(120px) rotateY(180deg)  rotateX(180deg) }
+        }
+        
+        @keyframes sk-rotateplane {
+            0% { 
+                transform: perspective(120px) rotateX(0deg) rotateY(0deg);
+                -webkit-transform: perspective(120px) rotateX(0deg) rotateY(0deg) 
+            } 50% { 
+                transform: perspective(120px) rotateX(-180.1deg) rotateY(0deg);
+                -webkit-transform: perspective(120px) rotateX(-180.1deg) rotateY(0deg) 
+            } 100% { 
+                transform: perspective(120px) rotateX(-180deg) rotateY(-179.9deg);
+                -webkit-transform: perspective(120px) rotateX(-180deg) rotateY(-179.9deg);
+            }
+        }
+        
         .tt-suggestion {
             padding: 3px 5px;
             font-size: 13px;
@@ -97,8 +130,7 @@
         .modal {
             text-align: align;
             z-index: 100000000 !important;
-        }
-        
+        }       
         
         #bookSearchModal .pic {
             float: left;
@@ -109,9 +141,13 @@
 </head>
 
 <body>
+    <!-- Wrapper for spiinner -->
+    <div class="spinner"></div>
+
+    <!-- Main navbar -->
     <nav style="margin-bottom: 20px;" class="navbar navbar-expand-lg navbar-light bg-light">
         <div class="container">
-            <a class="navbar-brand" href="#">The Book</a>
+            <a class="navbar-brand" href="{{ url_for('main.home') }}">The Book</a>
             <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false"
                 aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
@@ -119,39 +155,32 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 {% if current_user.is_authenticated %}
                 <ul class="navbar-nav">
-                    <li class="nav-item active">
-                        <a class="nav-link" href="#">Home
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('main.home') }}">Home
                             <span class="sr-only">(current)</span>
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#">Features</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#">Users</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#">Message</a>
+                        <a class="nav-link" href="{{ url_for('social.explore') }}">Users</a>
                     </li>
                 </ul>
                 <ul class="navbar-nav ml-auto">
                     <li class="nav-item">
                         <a class="nav-link clearfix align-middle" href="{{ url_for('social.user', username=current_user.username) }}">
-                            <img class="float-left align-middle rounded-circle" alt="avatar" width="25px" src="{{ user.add_avatar(512) }}" />
-                            <span>&nbsp;Foo</span>
+                            <img class="float-left align-middle rounded-circle" alt="avatar" width="25px" src="{{ current_user.add_avatar(512) }}" />
+                            <span class="text-capitalize">&nbsp;{{ current_user.first_name }}</span>
                         </a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('auth.logout') }}">Log Out</a>
                     </li>
-
                 </ul>
                 <form class="form-inline my-2 my-lg-0" id="the-basics">
                     <input class="form-control mr-sm-2 typeahead" type="search" id="nav-search-input" name="nav-search-input" placeholder="Search"
                         aria-label="Search">
-                    <button class="btn btn-outline-success my-2 my-sm-0" id="nav-search-button" type="submit">Search</button>
                 </form>
-                {% endif %} {% if not current_user.is_authenticated %}
+                {% endif %} 
+                {% if not current_user.is_authenticated %}
                 <ul class="navbar-nav ml-auto">
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('auth.login') }}">Log In</a>
@@ -164,6 +193,7 @@
             </div>
         </div>
     </nav>
+    <!-- Main container for flashed messages -->
     <div class="container">
         {% with messages = get_flashed_messages() %} {% if messages %} {% for message in messages %}
         <div class="alert alert-info alert-dismissible fade show" role="alert" style="margin-top: 1.5vh;">
@@ -175,7 +205,7 @@
         {% endfor %} {% endif %} {% endwith %}
     </div>
 
-    <!-- Modal -->
+    <!-- Book Modal -->
     {% if current_user.is_authenticated %}
     <div class="modal fade" id="bookSearchModal" tabindex="-1" role="dialog" aria-hidden="true">
         <div class="modal-dialog" role="document">
@@ -204,6 +234,7 @@
     </div>
     {% endif %}
 
+    <!-- Content can be expanded -->
     {% block content %} {% endblock %}
 </body>
 
@@ -213,6 +244,8 @@
 {% if current_user.is_authenticated %}
 <!-- Handling searching and opening modal in navigation bar -->
 <script>
+
+    // get suggestions from the search in the navbar
     const books = new Bloodhound({
         datumTokenizer: Bloodhound.tokenizers.whitespace,
         queryTokenizer: Bloodhound.tokenizers.whitespace,
@@ -266,7 +299,12 @@
                 }
             },
             source: users,
-        });
+        }).on('keyup', this, function (event) {
+            if (event.keyCode == 13) {
+                console.log("Here")
+                $('input').typeahead('close');
+            }
+        });;
 
     $('input[name="nav-search-input"]').on('input', function (val) {
         if ($(this).val()) {
@@ -275,29 +313,62 @@
     })
 
     $('input[name="nav-search-input"]').on('typeahead:selected', function (evt, item) {
-        let isbn = null
-        if (item.isbn.length === 2) {
-            isbn = item.isbn[1].identifier
-        }
-        else if (item.isbn.length === 1) {
-            isbn = item.isbn[0].identifier
-        }
-        if (isbn !== null) {            
-            $.when(getBookByISBN(isbn)).then(book => {
-                $("#bookSearchModal .pic").attr("src", book.imageLinks.thumbnail)
-                $("#bookSearchModal .name").text(book.title)
-                let temp = book.authors.map((value) => value + ", ")
-                const reduce = temp.reduce((reduce, val) => reduce + val)
-                $("#bookSearchModal .author span").text(reduce.substring(0, reduce.length - 2))
-                $("#bookSearchModal .description").html("<strong>Description: </strong>" + book.description)
-                $("#bookSearchModal .pageCount").html("<strong>Pages: </strong>" + book.pageCount)
-                $("#bookSearchModal .rating").text(book.averageRating == null ? "Not available" : book.averageRating)
-                $("#bookSearchModal .btn").attr("isbn", isbn)
-                $('#bookSearchModal').modal('show')
-            })
-        }
         $(this).typeahead("val", "");
-        $(this).val("")
+        if (item.username) {
+            window.location.replace(Flask.url_for("social.user", { "_external": true, "username": item.username }))
+        }
+        else {
+            $(".spinner").fadeIn()
+            let isbn = null
+            if (item.isbn.length === 2) {
+                isbn = item.isbn[1].identifier
+            }
+            else if (item.isbn.length === 1) {
+                isbn = item.isbn[0].identifier
+            }
+            if (isbn !== null) {       
+                $.ajax({
+                    method: "POST",
+                    contentType: "application/json",
+                    url: Flask.url_for("api.has_book", {"_external": true}),
+                    data: JSON.stringify({ isbn })
+                })
+                .done( res => {
+                    $.when(getBookByISBN(isbn)).done(book => {
+                        $("#bookSearchModal .pic").attr("src", book.imageLinks.thumbnail)
+                        $("#bookSearchModal .name").text(book.title)
+                        if (book.authors) {
+                            let temp = book.authors.map((value) => value + ", ")
+                            const reduce = temp.reduce((reduce, val) => reduce + val)
+                            $("#bookSearchModal .author span").text(reduce.substring(0, reduce.length - 2))
+                        }
+                        else {
+                            $("#bookSearchModal .author span").text("No authors")
+                        }
+                        
+                        $("#bookSearchModal .description").html("<strong>Description: </strong>" + book.description)
+                        $("#bookSearchModal .pageCount").html("<strong>Pages: </strong>" + book.pageCount)
+                        $("#bookSearchModal .rating").text(book.averageRating == null ? "Not available" : book.averageRating)
+                        $("#bookSearchModal .btn").attr("isbn", isbn)
+                        $('#bookSearchModal').modal('show')
+                        $(".twitter-typeahead input").removeClass("loading")
+                        if (res.has) {
+                            $("#bookSearchModal .btn-primary").text("Remove from collection")
+                        }
+                        $(".spinner").fadeOut()
+                    })
+                    .fail(err => {
+                        $(".spinner").fadeOut()
+                        alert(err)
+                    })
+                }
+                )
+                .fail((err) => {
+                    console.log("Error")
+                    $(".spinner").fadeOut()
+                })        
+            }
+        }
     })
 
     $('#the-basics .typeahead').bind('typeahead:render', function (ev, suggestion) {
@@ -310,21 +381,92 @@
 
 <!-- Handling add book into collection from the modal that is opened in the navigation bar -->
 <script>
-    $("#bookSearchModal .btn").click(function() {
+    $("#bookSearchModal .btn-primary").click(function() {
         const isbn = $(this).attr("isbn")
-        // do something with database here
-        $.ajax({
-            method: "POST",
-            contentType: "application/json",
-            url: Flask.url_for("api.add_book_by_isbn", {"_external": true}),
-            data: JSON.stringify({ isbn })
+        $(".spinner").fadeIn()
+        $.when(getBookByISBN(isbn)).then(book => {
+            // handling authors
+            let authors = ""
+            switch (book.authors.length) {
+                case 0:
+                    authors = "No Author"
+                    break
+                case 1:
+                    authors = `${book.authors[0]}`
+                    break
+                case 2:
+                    authors = `${book.authors[0]} and ${book.authors[1]}`
+                    break
+                default:
+                    authors = "Multiple Authors"
+            }
+
+            const pages = book.pageCount ? book.pageCount : -1
+            const title = book.title
+
+            $.ajax({
+                method: "POST",
+                contentType: "application/json",
+                url: Flask.url_for("api.add_book_by_isbn", {"_external": true}),
+                data: JSON.stringify({ isbn, authors, pages, title})
+            })
+            .done(res => {
+                $("#bookSearchModal").modal("hide")
+                if (res.delete) {
+                    $(`table [isbn=${isbn}]`).remove()
+                    if (list_of_books) {
+                        list_of_books = list_of_books.filter(book => book.isbn != isbn)
+                    }
+                    if (list_of_books.length === 0) {
+                        location.reload()
+                    }
+                }
+                else {
+                    {% if home %}
+                    const pages = (book.pageCount ? book.pageCount : "N/A")
+                    $('table > tbody:last-child').append(`
+                        <tr isbn="${isbn}">
+                            <td class="click">${title}</td>
+                            <td class="click">${authors}</td>
+                            <td class="text-center click">${pages}</td>
+                            <td class="text-center finished">
+                                <div class="my-1 mr-sm-2">
+                                <input isbnInput="${isbn}" type="checkbox"/>
+                                </div>
+                            </td>
+                        </tr>
+                    `);
+                    list_of_books.push(
+                        {
+                            "isbn": isbn,
+                            "title": title, 
+                            "authors": authors, 
+                            "pages": pages, 
+                            "finished": false 
+                        }
+                    )
+                    if (list_of_books.length === 1) {
+                        location.reload()
+                    }
+
+                    {% endif %}
+                }
+                $(".spinner").fadeOut()
+                
+                
+            })
+            .fail( err => {
+                console.log("Error in adding book")
+                $(".spinner").fadeOut()
+            })
+        }).fail(err => {
+            console.log("Error in adding book")
+            $(".spinner").fadeOut()
         })
-        .done(
-            $("#bookSearchModal").modal("hide")
-        )
-        .fail(
-            console.log("Error")
-        )
+    })
+
+    $('#bookSearchModal').on('hidden.bs.modal', function (e) {
+        $("#bookSearchModal .btn-primary").text("Add to collection")
     })
 </script>
 

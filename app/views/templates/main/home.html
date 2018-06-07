@@ -1,0 +1,239 @@
+
+
+{% extends "base.html" %} 
+{% block head %}
+<style>
+
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <p class="h3">Your collection</p>
+    {% if not books %}
+    <hr>
+    <div class="text-muted  text-center">
+        <img style="width:30%" src="{{ url_for('static', filename='img/no-book.png')}}">
+        <div>You don't have anything in your collection.</div>
+    </div>
+    <hr> 
+    {% else %}
+
+    <table class="table table-hover">
+        <thead>
+            <tr>
+                <th scope="col" type="name">Name <i class="fas fa-sort-down"></i></th>
+                <th scope="col" type="author">Author(s) <i class="fas fa-sort-down"></i></th>
+                <th scope="col" type="page" class="text-center"># of pages <i class="fas fa-sort-down"></i></th>
+                <th scope="col" type="finish" class="text-center">Finished <i class="fas fa-sort-down"></i></th>
+            </tr>
+        </thead>
+        <tbody>
+
+            {% for book in books %}
+            <tr isbn="{{ book.book_id }}">
+                <td class="click">{{ book.title }}</td>
+                <td class="click">{{ book.authors }}</td>
+                <td class="text-center click">{% if book.pages == -1 %} N/A {% else %} {{ book.pages }} {% endif %}</td>
+                <td class="text-center finished">
+                    <div class="my-1 mr-sm-2">
+                    <input isbnInput="{{ book.book_id }}" type="checkbox" {% if book.finished %} checked {% endif %} />
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% endif %}
+    <p class="h3">Recommended Books</p>
+    <div class="card-deck">
+    </div>
+</div>
+{% endblock %} {% block script %}
+<script>
+    // get a list of boook
+    let list_of_books = []
+    {% for book in books %}
+        list_of_books.push(
+            {
+                "isbn": "{{ book.book_id }}",
+                "title": "{{book.title}}", 
+                "authors": "{{book.authors}}", 
+                "pages": "{{book.pages}}", 
+                "finished": {% if book.finished %}{{ "true" }}{% else %}{{ "false" }}{% endif %}, 
+            }
+        )
+    {% endfor %}
+
+    
+    $("table").on("click", ".click", function() {
+        openModal($(this).parent())
+    })
+    
+
+    $("table").on("click", ".finished", function(e) {
+        e.preventDefault()
+        $(".spinner").fadeIn()
+        const isbn = $(this).parent().attr("isbn")
+        $.ajax({
+            method: "POST",
+            contentType: "application/json",
+            url: Flask.url_for("api.change_finish", {"_external": true}),
+            data: JSON.stringify({ isbn })
+        })
+        .done(res => {
+            $(`[isbnInput=${isbn}]`).prop ("checked", res.finished)
+            for (let i = 0; i < list_of_books.length; i++) {
+                if (list_of_books[i].isbn == isbn) {
+                    list_of_books[i].finished = res.finished
+                }
+            }
+            $(".spinner").fadeOut()
+        })
+        .fail(err => {
+            alert(err)
+            $(".spinner").fadeOut()
+        })
+    })
+    
+    // when user click one row in the table, open modal
+    $(".card-deck").on("click", ".card", function() {
+        openModal(this)
+    })
+
+    
+    // open book info modal
+    const openModal = (selector) => {
+        $(".spinner").fadeIn()
+        const isbn = $(selector).attr("isbn")
+        if (isbn !== null) {
+            $.ajax({
+                method: "POST",
+                contentType: "application/json",
+                url: Flask.url_for("api.has_book", { "_external": true }),
+                data: JSON.stringify({ isbn })
+            })
+                .done(res => {
+                    $.when(getBookByISBN(isbn)).done(book => {
+                        console.log(book)
+                        $("#bookSearchModal .pic").attr("src", book.imageLinks.thumbnail)
+                        $("#bookSearchModal .name").text(book.title)
+                        if (book.authors) {
+                            let temp = book.authors.map((value) => value + ", ")
+                            const reduce = temp.reduce((reduce, val) => reduce + val)
+                            $("#bookSearchModal .author span").text(reduce.substring(0, reduce.length - 2))
+                        } else {
+                            $("#bookSearchModal .author span").text("No authors")
+                        }
+                        
+                        $("#bookSearchModal .description").html("<strong>Description: </strong>" + book.description)
+                        $("#bookSearchModal .pageCount").html("<strong>Pages: </strong>" + book.pageCount)
+                        $("#bookSearchModal .rating").text(book.averageRating == null ? "Not available" : book.averageRating)
+                        $("#bookSearchModal .btn").attr("isbn", isbn)
+                        $('#bookSearchModal').modal('show')
+                        $(".twitter-typeahead input").removeClass("loading")
+                        if (res.has) {
+                            $("#bookSearchModal .btn-primary").text("Remove from collection")
+                        }
+                        $(".spinner").fadeOut()
+                    }).fail(err => {
+                        alert(err)
+                        $(".spinner").fadeOut()
+                    })
+                }
+                )
+                .fail((err) => {
+                    console.log("Error")
+                    $(".spinner").fadeOut()
+                })
+        }
+    }
+
+    
+    // when user clicking the sorting
+    $("tr i").click(function() {
+        const type = $(this).parent().attr("type")
+        if (type === "name") {
+            // sort by name here
+            list_of_books.sort((a, b) => a.title > b.title)
+        }
+        else if (type === "author") {
+            list_of_books.sort((a, b) => a.authors > b.authors)
+        }
+        else if (type === "page") {
+            list_of_books.sort((a, b) => a.pages < b.pages)
+        }
+        else if (type === "finish") {
+            list_of_books.sort((a, b) => a.finished)
+        }
+        $("tbody").css("border", "none");
+        $("tbody").animateCss('lightSpeedOut', function() {
+            let html = ""
+            list_of_books.forEach(book => {
+                const checked = (book.finished ? "checked" : "")
+                html += `
+                <tr isbn="${book.isbn}">
+                    <td class="click">${book.title}</td>
+                    <td class="click">${book.authors}</td>
+                    <td class="text-center click">${book.pages}</td>
+                    <td class="text-center finished">
+                        <input class="" isbnInput="${book.isbn}" type="checkbox" ${checked}>
+                    </td>
+                </tr>
+                `
+            })
+            $("tbody").html(html)
+            $("tbody").animateCss('lightSpeedIn')
+        });
+
+    })
+
+
+
+    // get recommendations
+    const possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    $.ajax({
+        url: `https://www.googleapis.com/books/v1/volumes?maxResults=40&key=AIzaSyBGjLVK8mlt9ZxyHBp8bDKUvEknWzYQ28s&&q=${possible.charAt(Math.floor(Math.random() * possible.length))}`,
+        success: function (results) {
+            let books = results.items
+            let html = ""
+            for (let i = 0; i < 4; i++) {
+                const index = Math.floor(Math.random() * books.length)
+                item = books[index].volumeInfo
+                let isbn = null
+                if (item.industryIdentifiers)
+                {
+                    if (item.industryIdentifiers.length === 2) {
+                        isbn = item.industryIdentifiers[1].identifier
+                    }
+                    else if (item.industryIdentifiers.length === 1) {
+                        isbn = item.industryIdentifiers[0].identifier
+                    }
+                }
+                else {
+                    i = i - 1
+                }
+
+                if (isbn)
+                {
+                    html += `
+                    <div class="card" isbn=${isbn}>
+                        <img class="card-img-top" height="300px" src="${item.imageLinks.thumbnail}"
+                            alt="Card image cap">
+                        <div class="card-body text-center">
+                            <p class="card-title">${item.title}</p>
+                        </div>
+                    </div>`
+                }
+                else {
+                    i = i - 1
+                }
+            }
+            $(".card-deck").html(html);
+            
+        }
+    });
+
+
+
+</script> {% endblock %}

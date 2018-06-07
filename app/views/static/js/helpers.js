@@ -1,18 +1,26 @@
 const getBookByISBN = async isbn => {
   const data = await fetch(
-    `https://www.googleapis.com/books/v1/volumes?q=isbn:${isbn}`,
+    `https://www.googleapis.com/books/v1/volumes?key=AIzaSyBGjLVK8mlt9ZxyHBp8bDKUvEknWzYQ28s&q=isbn:${isbn}`,
     {
       method: "GET"
     }
   );
 
+  console.log(data)
+
   if (!data.ok) {
+    throw "Failed retreiving data"
     getWarningMessage("Speelings are wrong or words do not exist");
     return false;
   }
-  console.log(data);
+
+
   const result = await data.json();
-  return result.items.length == 0 ? false : result.items[0].volumeInfo;
+  console.log(result)
+  if (result.items) {
+    return result.items.length == 0 ? false : result.items[0].volumeInfo;
+  }
+  throw "Cannot get book. Please try different one.";
 };
 
 const getRandomIndex = array => {
@@ -20,7 +28,6 @@ const getRandomIndex = array => {
 };
 
 const getListOfBooks = async username => {
-  
   a = await $.ajax({
     method: "POST",
     contentType: "application/json",
@@ -30,3 +37,30 @@ const getListOfBooks = async username => {
   
   return a.value
 }
+
+$.fn.extend({
+  animateCss: function(animationName, callback) {
+    var animationEnd = (function(el) {
+      var animations = {
+        animation: 'animationend',
+        OAnimation: 'oAnimationEnd',
+        MozAnimation: 'mozAnimationEnd',
+        WebkitAnimation: 'webkitAnimationEnd',
+      };
+
+      for (var t in animations) {
+        if (el.style[t] !== undefined) {
+          return animations[t];
+        }
+      }
+    })(document.createElement('div'));
+
+    this.addClass('animated ' + animationName).one(animationEnd, function() {
+      $(this).removeClass('animated ' + animationName);
+
+      if (typeof callback === 'function') callback();
+    });
+
+    return this;
+  },
+});

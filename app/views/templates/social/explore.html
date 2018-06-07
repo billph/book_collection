@@ -1,0 +1,64 @@
+{% extends "base.html" %} {% block content %}
+<div class="container">
+    <p class="h5">Users</p>
+    <hr>
+
+    <div class="input-group" style="width:25%">
+        <input type="text" placeholder="Type in username" class="form-control" aria-label="Text input with segmented dropdown button">
+    </div>
+    <hr>
+    <div class="card-columns">
+
+        {% for user in users %}
+        <div class="card">
+            <img class="card-img-top" src="{{ user.add_avatar(512)}}" alt="Card image" style="width:100%">
+            <div class="card-body">
+                <h4 class="card-title text-capitalize">{{user.first_name + " " + user.last_name}}</h4>
+                <p class="card-text text-muted">{{ user.username }}</p>
+                <a href="{{ url_for('social.user', username=user.username) }}" class="btn btn-primary">See Profile</a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+{% endblock %}
+
+
+{% block script %}
+<script>
+$('input').change(function(){
+    let keyword = $(this).val()
+    $(".spinner").fadeIn()
+    $.ajax({
+        contentType: "application/json",
+        url: Flask.url_for("social.search_user", { _external: true, "username": keyword}),
+        data: JSON.stringify({ username: "anh" })
+    }).done(msg => {
+        let html = ""
+        const users = msg.value
+        if (users) {
+            users.forEach(user => {
+                html += `
+                <div class="card">
+                    <img class="card-img-top" src="${user.imageLink}" alt="Card image" style="width:100%">
+                    <div class="card-body">
+                        <h4 class="card-title">Foo Bar</h4>
+                        <p class="card-text text-muted">${user.username}</p>
+                        <a href="${user.profileLink}" class="btn btn-primary">See Profile</a>
+                    </div>
+                </div>
+                `
+            })
+        }
+        if (html) {
+            $(".card-columns").html(html)
+        }
+        console.log(html)
+        $(".spinner").fadeOut()
+    })
+    .fail(err => {
+        $(".spinner").fadeOut()
+    })
+});
+</script>
+{% endblock %}

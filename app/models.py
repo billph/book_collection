@@ -4,6 +4,7 @@ from hashlib import md5
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin
 from app import db, login
+from operator import itemgetter
 
 class User_Book(db.Model):
     __tablename__ = "user_book"
@@ -14,21 +15,9 @@ class User_Book(db.Model):
     added_date = db.Column(db.DateTime, default=datetime.utcnow)
     notes = db.Column(db.String(1000))
     topics = db.Column(db.String(1000))
-
-# class Following(db.Model):
-#     """
-#         user_id is the user ifeslf
-#         following_id is the id of the other user that the current user is following
-#     """
-#     __tablename__ = "following"
-#     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), primary_key=True)
-#     following_id = db.Column(db.Integer, db.ForeignKey("user.id"), primary_key=True)
-
-# following = db.Table(
-#     'following',
-#     db.Column('user_id', db.Integer, db.ForeignKey('user.id')),
-#     db.Column('following_id', db.Integer, db.ForeignKey('user.id'))
-# )
+    title = db.Column(db.String(100))
+    authors = db.Column(db.String(50))
+    pages = db.Column(db.Integer)
 
 class Friendship(db.Model):
     __tablename__ = "friend"
@@ -48,11 +37,12 @@ class User(UserMixin, db.Model):
     preferences = db.Column(db.String(100))
     bio = db.Column(db.String(60))
     books = db.relationship("Book", secondary="user_book", lazy='dynamic')
-    # following_users = db.relationship("User", secondary="following",
-    #     primaryjoin=(following.user_id == id),
-    #     secondaryjoin=(following.following_id == id),
-    #     backref=db.backref('following', lazy='dynamic'), 
-    #     lazy='dynamic')
+    first_book = db.Column(db.DateTime)
+    first_join = db.Column(db.DateTime, default=datetime.utcnow)
+    first_following = db.Column(db.DateTime)
+    first_ten_books = db.Column(db.DateTime)
+    first_unfollow = db.Column(db.DateTime)
+    first_bio = db.Column(db.DateTime)
 
     followers = db.relationship('Friendship', backref='to', primaryjoin=id==Friendship.following_id)
     following = db.relationship('Friendship', backref='from', primaryjoin=id==Friendship.user_id)
@@ -62,15 +52,60 @@ class User(UserMixin, db.Model):
         return 'https://www.gravatar.com/avatar/{}?d=identicon&s={}'.format(
             digest, size)
 
+    def add_bio(self, bio):
+        self.bio = bio
+        if not self.first_bio:
+            self.first_bio = datetime.utcnow()
+        db.session.commit()
+
+    def get_activities(self):
+        list_of_activites = [
+            {
+                "name": "First Book",
+                "date": self.first_book
+            }, 
+            {
+                "name": "join The Book",
+                "date": self.first_join
+            }, 
+            {
+                "name": "First Bio",
+                "date": self.first_following
+            },
+            {   "name": "First Ten Books",
+                "date": self.first_ten_books
+            },
+            {
+                "name": "First Bio",
+                "date": self.first_bio
+            }
+        ]
+
+        avail_activities = [i for i in list_of_activites if i["date"]]
+        avail_activities.sort(key=itemgetter("date"), reverse=True)
+
+        return avail_activities
+        
+
     def follow(self, user):
         if not self.is_following(user):
             f = Friendship(user_id=self.id, following_id=user.id)
             db.session.add(f)
+            if not self.first_following:
+                self.first_following = datetime.utcnow()
             db.session.commit()
+
+    def change_finish(self, book_user):
+        book_user.finished = not book_user.finished
+        db.session.commit()
+
     
     def unfollow(self, user):
         if self.is_following(user):
             Friendship.query.filter_by(user_id=self.id, following_id=user.id).delete()
+            if not self.first_unfollow:
+                self.first_unfollow = datetime.utcnow()
+
             db.session.commit()
             
     def is_following(self, user):
@@ -79,11 +114,17 @@ class User(UserMixin, db.Model):
     def get_followers(self):
         return self.following_users.filter(following.c.user_id == self.id).all()
 
-    def add_book(self, book):
+    def add_book(self, book, title, authors, pages):
         exist = self.books.filter_by(id=book.id).first()
         if not exist:
-            user_book = User_Book(user_id=self.id, book_id=book.id, finished=False)
+            user_book = User_Book(user_id=self.id, book_id=book.id, finished=False, title=title, authors=authors, pages=pages)
             db.session.add(user_book)
+            if not self.first_book:
+                self.first_book = datetime.utcnow()
+            elif not self.first_ten_books:
+                if len(self.get_books()) == 10:
+                    self.first_ten_books = datetime.utcnow()
+
             db.session.commit()
 
     def get_books(self):
